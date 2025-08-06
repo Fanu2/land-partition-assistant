@@ -1,6 +1,7 @@
 import streamlit as st
 from langchain_community.llms import Ollama
 from langchain.chains import RetrievalQA
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from build_index import build_faiss_index
 from utils import highlight_text, format_response
 
