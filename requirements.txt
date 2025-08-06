@@ -1,7 +1,7 @@
 streamlit
 pandas
-langchain
-openai
+langchain==0.1.13
 faiss-cpu
+openai
 tiktoken
 PyPDF2
