@@ -1,31 +1,49 @@
 import streamlit as st
 import pandas as pd
-from utils import filter_records, generate_notice
+from langchain.vectorstores import FAISS
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.chat_models import ChatOpenAI
+from langchain.chains import RetrievalQA
+from build_index import build_faiss_index
+from utils import highlight_text, format_response
 
+# --- App Config ---
 st.set_page_config(page_title="Land Partition Assistant", layout="wide")
+st.title("🏞️ Land Partition Assistant")
+st.markdown("Ask questions about the Haryana Land Revenue Act or mutation records.")
 
-st.title("📜 Haryana Land Partition Assistant – Section 111A")
+# --- Load Data ---
+@st.cache_resource
+def load_index():
+    return build_faiss_index("haryana_land_revenue_act.pdf")
 
-with st.expander("🔍 What is Section 111A?"):
-    st.markdown("""
-    Section 111A empowers Revenue Officers to initiate partition of jointly held land by mutual consent...
-    - Applies to all co-sharers except husband-wife
-    - 6-month timeline + 6-month extension
-    - Mutation updates under Section 123
-    """)
+@st.cache_data
+def load_mutation_data():
+    return pd.read_csv("sample_mutation_records.csv")
 
-st.subheader("📋 Generate Suo Motu Notice")
-name = st.text_input("Enter Co-sharer Name")
-relation = st.selectbox("Relation to Other Co-sharers", ["Sibling", "Parent", "Spouse", "Other"])
-if st.button("Generate Notice"):
-    if relation == "Spouse":
-        st.warning("Partition not applicable for husband-wife under Section 111A.")
-    else:
-        st.success(generate_notice(name, relation))
+# --- Initialize Models ---
+index = load_index()
+retriever = index.as_retriever(search_kwargs={"k": 5})
+llm = ChatOpenAI(temperature=0.2)
+qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
 
-st.subheader("📊 View Mutation Records")
-uploaded_file = st.file_uploader("Upload mutation CSV", type="csv")
-if uploaded_file:
-    df = pd.read_csv(uploaded_file)
-    filtered_df = filter_records(df)
-    st.dataframe(filtered_df)
+# --- Sidebar ---
+st.sidebar.header("Mutation Record Viewer")
+mutation_df = load_mutation_data()
+selected_record = st.sidebar.selectbox("Choose a record", mutation_df["Record ID"].astype(str))
+
+if selected_record:
+    record_data = mutation_df[mutation_df["Record ID"].astype(str) == selected_record].to_dict(orient="records")[0]
+    st.sidebar.write("### Record Details")
+    for key, value in record_data.items():
+        st.sidebar.write(f"**{key}**: {value}")
+
+# --- Main QA Section ---
+query = st.text_input("🔍 Ask a legal question", placeholder="e.g., What is the procedure for land mutation?")
+if query:
+    with st.spinner("Thinking..."):
+        response = qa_chain.run(query)
+        st.markdown("### 📘 Answer")
+        st.write(format_response(response))
+        st.markdown("### 🔍 Source Highlights")
+        st.write(highlight_text(response, query))
