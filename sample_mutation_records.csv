@@ -1,0 +1,6 @@
+Record ID,Mutation Type,Applicant Name,Respondent Name,Khewat No,Khasra No,Area (acres),Village,Tehsil,Date of Application,Status,Remarks
+MUT001,Inheritance,Rajesh Kumar,NA,102,45/2,2.5,Badshahpur,Gurgaon,2023-01-15,Approved,Mutation entered after father's death
+MUT002,Sale,Suman Devi,Amit Singh,87,12/1,1.2,Manesar,Gurgaon,2023-03-10,Pending,Verification of sale deed in progress
+MUT003,Gift,Anil Sharma,Sunita Sharma,56,33/4,0.75,Sohna,Gurgaon,2022-12-05,Rejected,Gift deed not registered
+MUT004,Partition,Vikram Yadav,Ajay Yadav,110,78/3,3.0,Rewari,Rewari,2023-02-20,Approved,Land partitioned among brothers
+MUT005,Exchange,Meena Rani,Ravi Kumar,99,21/5,1.8,Bawal,Rewari,2023-04-01,Pending,Awaiting revenue officer's inspection
