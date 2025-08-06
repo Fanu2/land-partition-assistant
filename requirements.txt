@@ -1,7 +1,8 @@
 streamlit
 pandas
-langchain==0.1.13
+langchain
+langchain-community
 faiss-cpu
-openai
-tiktoken
-PyPDF
+sentence-transformers
+pypdf
+python-dotenv
