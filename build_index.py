@@ -1,22 +1,17 @@
-# build_index.py
-
-from langchain.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import PyPDFLoader
+from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain.embeddings import OpenAIEmbeddings
+from sentence_transformers import SentenceTransformer
+from langchain.embeddings import HuggingFaceEmbeddings
 
-# --- Load PDF ---
-pdf_path = "haryana_land_revenue_act.pdf"
-loader = PyPDFLoader(pdf_path)
-documents = loader.load()
+def build_faiss_index(pdf_path):
+    loader = PyPDFLoader(pdf_path)
+    pages = loader.load()
+    splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    docs = splitter.split_documents(pages)
 
-# --- Split into Chunks ---
-splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-chunks = splitter.split_documents(documents)
+    # Use free Hugging Face embeddings
+    model_name = "sentence-transformers/all-MiniLM-L6-v2"
+    embeddings = HuggingFaceEmbeddings(model_name=model_name)
 
-# --- Embed and Save FAISS Index ---
-embedding = OpenAIEmbeddings()
-db = FAISS.from_documents(chunks, embedding)
-db.save_local("faiss_index")
-
-print("✅ FAISS index built and saved to 'faiss_index'")
+    return FAISS.from_documents(docs, embeddings)
